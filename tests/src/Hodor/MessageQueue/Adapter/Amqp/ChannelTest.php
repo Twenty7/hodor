@@ -4,11 +4,14 @@ namespace Hodor\MessageQueue\Adapter\Amqp;
 
 use PHPUnit_Framework_TestCase;
 
+/**
+ * @coversDefaultClass Hodor\MessageQueue\Adapter\Amqp\Channel
+ */
 class ChannelTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * @covers Hodor\MessageQueue\Adapter\Amqp\Channel::__construct
-     * @covers Hodor\MessageQueue\Adapter\Amqp\Channel::<private>
+     * @covers ::__construct
+     * @covers ::<private>
      * @dataProvider provideQueueConfigMissingARequiredField
      * @expectedException \LogicException
      * @param array $queue_config
@@ -19,8 +22,8 @@ class ChannelTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Hodor\MessageQueue\Adapter\Amqp\Channel::__construct
-     * @covers Hodor\MessageQueue\Adapter\Amqp\Channel::<private>
+     * @covers ::__construct
+     * @covers ::<private>
      */
     public function testConnectionCanBeInstantiatedWithoutError()
     {
@@ -31,14 +34,14 @@ class ChannelTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Hodor\MessageQueue\Adapter\Amqp\Channel::__construct
-     * @covers Hodor\MessageQueue\Adapter\Amqp\Channel::getAmqpChannel
+     * @covers ::__construct
+     * @covers ::getAmqpChannel
      * @dataProvider provideQueueList
      * @param array $queues
      */
     public function testAmqpChannelsCanBeRetrieved(array $queues)
     {
-        foreach ($queues as $queue_key => $queue_config) {
+        foreach ($queues as $queue_config) {
             $connection = new Connection($queue_config);
             $channel = new Channel($connection, $queue_config);
             $this->assertInstanceOf('PhpAmqpLib\Channel\AMQPChannel', $channel->getAmqpChannel());
@@ -46,14 +49,14 @@ class ChannelTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Hodor\MessageQueue\Adapter\Amqp\Channel::__construct
-     * @covers Hodor\MessageQueue\Adapter\Amqp\Channel::getAmqpChannel
+     * @covers ::__construct
+     * @covers ::getAmqpChannel
      * @dataProvider provideQueueList
      * @param array $queues
      */
     public function testAmqpChannelsCanBeReused(array $queues)
     {
-        foreach ($queues as $queue_key => $queue_config) {
+        foreach ($queues as $queue_config) {
             $connection = new Connection($queue_config);
             $channel = new Channel($connection, $queue_config);
             $this->assertSame($channel->getAmqpChannel(), $channel->getAmqpChannel());
@@ -61,8 +64,8 @@ class ChannelTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Hodor\MessageQueue\Adapter\Amqp\Channel::__construct
-     * @covers Hodor\MessageQueue\Adapter\Amqp\Channel::getQueueName
+     * @covers ::__construct
+     * @covers ::getQueueName
      */
     public function testQueueNamePassedToConstructorIsTheSameRetrieved()
     {
@@ -75,8 +78,8 @@ class ChannelTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Hodor\MessageQueue\Adapter\Amqp\Channel::__construct
-     * @covers Hodor\MessageQueue\Adapter\Amqp\Channel::getMaxMessagesPerConsume
+     * @covers ::__construct
+     * @covers ::getMaxMessagesPerConsume
      */
     public function testMaxMessagesPerConsumePassedToConstructorIsTheSameRetrieved()
     {
@@ -92,8 +95,8 @@ class ChannelTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Hodor\MessageQueue\Adapter\Amqp\Channel::__construct
-     * @covers Hodor\MessageQueue\Adapter\Amqp\Channel::getMaxTimePerConsume
+     * @covers ::__construct
+     * @covers ::getMaxTimePerConsume
      */
     public function testMaxTimePerConsumePassedToConstructorIsTheSameRetrieved()
     {
@@ -113,14 +116,12 @@ class ChannelTest extends PHPUnit_Framework_TestCase
      */
     public function provideQueueConfigMissingARequiredField()
     {
-        $rabbit_credentials = $this->getRabbitCredentials();
-
         $required_fields = [
             'queue_name' => uniqid(),
         ];
 
         $queue_configs = [];
-        foreach ($required_fields as $field_to_remove => $value) {
+        foreach (array_keys($required_fields) as $field_to_remove) {
             $queue_config = $required_fields;
             unset($queue_config[$field_to_remove]);
 
@@ -130,27 +131,18 @@ class ChannelTest extends PHPUnit_Framework_TestCase
         return $queue_configs;
     }
 
+    /**
+     * @return array
+     */
     public function provideQueueList()
     {
-        $rabbit_credentials = $this->getRabbitCredentials();
+        $config_provider = new ConfigProvider($this);
 
         return [
             [
                 [
-                    'fast_jobs' => [
-                        'host'       => $rabbit_credentials['host'],
-                        'port'       => $rabbit_credentials['port'],
-                        'username'   => $rabbit_credentials['username'],
-                        'password'   => $rabbit_credentials['password'],
-                        'queue_name' => $rabbit_credentials['queue_prefix'] . uniqid(),
-                    ],
-                    'slow_jobs' => [
-                        'host'       => $rabbit_credentials['host'],
-                        'port'       => $rabbit_credentials['port'],
-                        'username'   => $rabbit_credentials['username'],
-                        'password'   => $rabbit_credentials['password'],
-                        'queue_name' => $rabbit_credentials['queue_prefix'] . uniqid(),
-                    ],
+                    'fast_jobs' => $config_provider->getQueueConfig(),
+                    'slow_jobs' => $config_provider->getQueueConfig(),
                 ]
             ]
         ];
@@ -168,12 +160,5 @@ class ChannelTest extends PHPUnit_Framework_TestCase
             ->getMockBuilder('Hodor\MessageQueue\Adapter\Amqp\Connection')
             ->disableOriginalConstructor()
             ->getMock();
-    }
-
-    private function getRabbitCredentials()
-    {
-        $config = require __DIR__ . '/../../../../../../config/config.test.php';
-
-        return  $config['test']['rabbitmq'];
     }
 }

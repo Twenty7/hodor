@@ -2,11 +2,17 @@
 
 namespace Hodor\JobQueue;
 
+use Exception;
 use PHPUnit_Framework_TestCase;
 
+/**
+ * @coversDefaultClass Hodor\JobQueue\Config
+ */
 class ConfigTest extends PHPUnit_Framework_TestCase
 {
     /**
+     * @covers ::__construct
+     * @covers ::getConfigPath
      * @dataProvider configProvider
      */
     public function testConfigPathIsSet($options)
@@ -22,6 +28,8 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getDatabaseConfig
      * @dataProvider configProvider
      */
     public function testDatabaseConfigCanBeRetrieved($options)
@@ -43,26 +51,32 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getDatabaseConfig
      * @expectedException \Exception
      */
     public function testRetrievingDatabaseConfigThrowsExceptionIfSuperqueuerConfigIsNotDefined()
     {
         $config = new Config(__FILE__, []);
 
-        $db_config = $config->getDatabaseConfig();
+        $config->getDatabaseConfig();
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getDatabaseConfig
      * @expectedException \Exception
      */
     public function testRetrievingDatabaseConfigThrowsExceptionIfDbConfigIsNotDefined()
     {
         $config = new Config(__FILE__, ['superqueuer' => []]);
 
-        $db_config = $config->getDatabaseConfig();
+        $config->getDatabaseConfig();
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getBufferQueueConfig
      * @dataProvider configProvider
      * @expectedException Exception
      */
@@ -70,10 +84,12 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     {
         $config = new Config(__FILE__, $options);
 
-        $queue_config = $config->getBufferQueueConfig('undeclared');
+        $config->getBufferQueueConfig('undeclared');
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getBufferQueueConfig
      * @dataProvider configProvider
      */
     public function testBufferQueueConfigIsComposedOfDefaultsAndSpecifics($options)
@@ -97,6 +113,8 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getBufferQueueConfig
      * @dataProvider configProvider
      */
     public function testBufferQueueKeyNameIsSet($options)
@@ -112,6 +130,8 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getBufferQueueConfig
      * @dataProvider configProvider
      */
     public function testBufferQueueNameDefaultsToPrefixAndQueueKey($options)
@@ -127,6 +147,8 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getBufferQueueConfig
      * @dataProvider configProvider
      */
     public function testBufferQueueFetchCountIsDefaulted($options)
@@ -142,6 +164,8 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getWorkerQueueConfig
      * @dataProvider configProvider
      * @expectedException Exception
      */
@@ -149,10 +173,12 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     {
         $config = new Config(__FILE__, $options);
 
-        $queue_config = $config->getWorkerQueueConfig('undeclared');
+        $config->getWorkerQueueConfig('undeclared');
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getWorkerQueueConfig
      * @dataProvider configProvider
      */
     public function testWorkerConfigIsComposedOfDefaultsAndSpecifics($options)
@@ -176,6 +202,8 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getWorkerQueueConfig
      * @dataProvider configProvider
      */
     public function testWorkerKeyNameIsSet($options)
@@ -191,6 +219,8 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getWorkerQueueConfig
      * @dataProvider configProvider
      */
     public function testWorkerQueueNameDefaultsToPrefixAndQueueKey($options)
@@ -206,6 +236,8 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getWorkerQueueConfig
      * @dataProvider configProvider
      */
     public function testWorkerQueueFetchCountIsOne($options)
@@ -221,6 +253,8 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getJobRunnerFactory
      * @expectedException Exception
      */
     public function testAJobRunnerFactoryMustBeConfigured()
@@ -231,6 +265,8 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getJobRunnerFactory
      * @expectedException Exception
      */
     public function testTheJobRunnerFactoryMustBeACallable()
@@ -243,6 +279,8 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getJobRunnerFactory
      * @dataProvider configProvider
      */
     public function testTheJobRunnerFactoryIsReturnedIfProperlyConfigured($options)
@@ -259,6 +297,8 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getWorkerQueueNameFactory
      * @expectedException \Exception
      */
     public function testWorkerQueueNameFactoryThrowsExceptionIfItIsNotCallable()
@@ -267,10 +307,12 @@ class ConfigTest extends PHPUnit_Framework_TestCase
             'worker_queue_name_factory' => 'blah',
         ]);
 
-        $callback = $config->getWorkerQueueNameFactory();
+        $config->getWorkerQueueNameFactory();
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getWorkerQueueNameFactory
      * @dataProvider configProvider
      */
     public function testWorkerQueueNameFactoryIsDefaultedToQueueNameOptionsCallback($options)
@@ -292,6 +334,8 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getWorkerQueueNameFactory
      * @dataProvider configProvider
      * @expectedException \Exception
      */
@@ -310,6 +354,8 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getWorkerQueueNameFactory
      * @dataProvider configProvider
      */
     public function testWorkerQueueNameFactoryCanBeProvided($options)
@@ -330,6 +376,8 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getBufferQueueNameFactory
      * @expectedException \Exception
      */
     public function testBufferQueueNameFactoryThrowsExceptionIfItIsNotCallable()
@@ -338,10 +386,12 @@ class ConfigTest extends PHPUnit_Framework_TestCase
             'buffer_queue_name_factory' => 'blah',
         ]);
 
-        $callback = $config->getBufferQueueNameFactory();
+        $config->getBufferQueueNameFactory();
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getBufferQueueNameFactory
      * @dataProvider configProvider
      */
     public function testBufferQueueNameFactoryIsDefaultedToDefaultQueue($options)
@@ -363,6 +413,8 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getBufferQueueNameFactory
      * @dataProvider configProvider
      */
     public function testBufferQueueNameFactoryCanBeProvided($options)
@@ -383,6 +435,9 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getBufferQueueNameFactory
+     * @covers ::getOption
      * @dataProvider configProvider
      */
     public function testDaemonConfigCanBeRetrieved($options)
@@ -395,6 +450,11 @@ class ConfigTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @covers ::__construct
+     * @covers ::getWorkerQueueNames
+     * @covers ::getOption
+     */
     public function testWorkerQueueNamesCanBeRetrieved()
     {
         $config = new Config(__FILE__, [
@@ -410,6 +470,11 @@ class ConfigTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @covers ::__construct
+     * @covers ::getBufferQueueNames
+     * @covers ::getOption
+     */
     public function testBufferQueueNamesCanBeRetrieved()
     {
         $config = new Config(__FILE__, [

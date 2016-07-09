@@ -5,43 +5,79 @@ namespace Hodor\MessageQueue\Adapter\Testing;
 use Hodor\MessageQueue\Adapter\FactoryInterface;
 use PHPUnit_Framework_TestCase;
 
+/**
+ * @coversDefaultClass Hodor\MessageQueue\Adapter\Testing\Config
+ */
 class ConfigTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * @covers Hodor\MessageQueue\Adapter\Testing\Config::__construct
-     * @covers Hodor\MessageQueue\Adapter\Testing\Config::getAdapterFactory
+     * @covers ::__construct
+     * @covers ::getAdapterFactory
      */
-    public function testAdapterFactoryReturnedIsSameProvidedToConstructor()
+    public function testAdapterFactoryReturnedIsSameReturnedByFactoryGenerator()
     {
         $adapter_factory = $this->getAdapterFactoryMock();
-        $config = new Config($adapter_factory);
+        $config = new Config(function () use ($adapter_factory) {
+            return $adapter_factory;
+        });
 
         $this->assertSame($adapter_factory, $config->getAdapterFactory());
     }
 
     /**
-     * @covers Hodor\MessageQueue\Adapter\Testing\Config::getQueueConfig
+     * @covers ::__construct
+     * @covers ::getAdapterFactory
+     */
+    public function testAdapterFactoryIsLazyLoaded()
+    {
+        $config = new Config(function () {
+            return $this->getAdapterFactoryMock();
+        });
+
+        $this->assertSame($config->getAdapterFactory(), $config->getAdapterFactory());
+    }
+
+    /**
+     * @covers ::__construct
+     * @covers ::getAdapterFactory
+     */
+    public function testAdapterFactoryReturnedIsSameProvidedToConstructor()
+    {
+        $adapter_factory = $this->getAdapterFactoryMock();
+        $config = new Config(function () use ($adapter_factory) {
+            return $adapter_factory;
+        });
+
+        $this->assertSame($adapter_factory, $config->getAdapterFactory());
+    }
+
+    /**
+     * @covers ::getQueueConfig
      * @expectedException \OutOfBoundsException
      * @dataProvider queueConfigProvider
      * @param string $queue_key
      */
     public function testRetrievingUndefinedQueueThrowsAnException($queue_key)
     {
-        $config = new Config($this->getAdapterFactoryMock());
+        $config = new Config(function () {
+            return $this->getAdapterFactoryMock();
+        });
 
         $config->getQueueConfig($queue_key);
     }
 
     /**
-     * @covers Hodor\MessageQueue\Adapter\Testing\Config::addQueueConfig
-     * @covers Hodor\MessageQueue\Adapter\Testing\Config::getQueueConfig
+     * @covers ::addQueueConfig
+     * @covers ::getQueueConfig
      * @dataProvider queueConfigProvider
      * @param string $queue_key
      * @param array $queue_config
      */
     public function testAddedQueueConfigCanBeRetrieved($queue_key, array $queue_config)
     {
-        $config = new Config($this->getAdapterFactoryMock());
+        $config = new Config(function () {
+            return $this->getAdapterFactoryMock();
+        });
 
         $config->addQueueConfig($queue_key, $queue_config);
         $this->assertEquals($queue_config, $config->getQueueConfig($queue_key));

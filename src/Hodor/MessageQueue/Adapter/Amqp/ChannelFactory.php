@@ -3,12 +3,7 @@
 namespace Hodor\MessageQueue\Adapter\Amqp;
 
 use Hodor\MessageQueue\Adapter\ConfigInterface;
-use Hodor\MessageQueue\Adapter\ConsumerInterface;
-use Hodor\MessageQueue\Adapter\FactoryInterface;
-use Hodor\MessageQueue\Adapter\ProducerInterface;
 use LogicException;
-use PhpAmqpLib\Channel\AMQPChannel;
-use PhpAmqpLib\Connection\AbstractConnection;
 
 class ChannelFactory
 {
@@ -23,7 +18,7 @@ class ChannelFactory
     private $connections = [];
 
     /**
-     * @var AMQPChannel[]
+     * @var Channel[]
      */
     private $channels = [];
 
@@ -35,9 +30,16 @@ class ChannelFactory
         $this->config = $config;
     }
 
+    public function disconnectAll()
+    {
+        foreach ($this->connections as $connection) {
+            $connection->disconnect();
+        }
+    }
+
     /**
      * @param  string $queue_key
-     * @return AMQPChannel
+     * @return Channel
      */
     public function getChannel($queue_key)
     {

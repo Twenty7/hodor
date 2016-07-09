@@ -5,8 +5,17 @@ namespace Hodor\Daemon;
 use PHPUnit_Framework_TestCase;
 use Hodor\JobQueue\Config;
 
+/**
+ * @coversDefaultClass Hodor\Daemon\SupervisordManager
+ */
 class SupervisordManagerTest extends PHPUnit_Framework_TestCase
 {
+    /**
+     * @covers ::__construct
+     * @covers ::getDaemonConfig
+     * @covers ::generateQueuePrograms
+     * @covers ::evaluateProgramName
+     */
     public function testDaemonConfigContainsExpectedProcesses()
     {
         $expected = [
@@ -24,6 +33,10 @@ class SupervisordManagerTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::getDaemonConfig
+     * @covers ::generateQueuePrograms
+     * @covers ::getProgram
      * @dataProvider provideDaemonProcesses
      */
     public function testProcessesContainExpectedKeys()
@@ -53,6 +66,15 @@ class SupervisordManagerTest extends PHPUnit_Framework_TestCase
         }
     }
 
+    /**
+     * @covers ::__construct
+     * @covers ::getDaemonConfig
+     * @covers ::generateQueuePrograms
+     * @covers ::getBinFilePath
+     * @covers ::evaluateProgramName
+     * @covers ::generateCommandString
+     * @covers ::getProgram
+     */
     public function testDaemonConfigIsGeneratedAsExpected()
     {
         $this->assertEquals(
@@ -75,26 +97,34 @@ class SupervisordManagerTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::__construct
+     * @covers ::setupDaemon
+     * @covers ::getRawDaemonConfig
+     * @covers ::generateProgramText
      * @expectedException \Exception
      */
     public function testSetupDaemonThrowsAnExceptionIfConfigFileIsNotWritable()
     {
-        $hodor_base_path = dirname(dirname(dirname(dirname(__DIR__))));
-
-        $supervisord_config_path = __DIR__ . '/../../../../tests/non-existent/supervisord.' . uniqid() . '.conf';
-        $manager = $this->getSupervisordManager($supervisord_config_path);
+        $supervisord_conf = __DIR__ . '/../../../../tests/non-existent/supervisord.' . uniqid() . '.conf';
+        $manager = $this->getSupervisordManager($supervisord_conf);
 
         $manager->setupDaemon();
     }
 
+    /**
+     * @covers ::__construct
+     * @covers ::setupDaemon
+     * @covers ::getRawDaemonConfig
+     * @covers ::generateProgramText
+     */
     public function testSetupDaemonGeneratesSupervisordConfig()
     {
         $hodor_base_path = dirname(dirname(dirname(dirname(__DIR__))));
 
-        $supervisord_config_path = __DIR__ . '/../../../../tests/tmp/supervisord.' . uniqid() . '.conf';
-        $manager = $this->getSupervisordManager($supervisord_config_path);
+        $supervisord_conf = __DIR__ . '/../../../../tests/tmp/supervisord.' . uniqid() . '.conf';
+        $manager = $this->getSupervisordManager($supervisord_conf);
 
-        $config_dir = dirname($supervisord_config_path);
+        $config_dir = dirname($supervisord_conf);
         if (!is_dir($config_dir) && !mkdir($config_dir)) {
             throw new Exception("Could not create directory '{$config_dir}'.");
         }
@@ -109,20 +139,20 @@ class SupervisordManagerTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             $expected_supervisord_config,
-            file_get_contents($supervisord_config_path)
+            file_get_contents($supervisord_conf)
         );
     }
 
     /**
-     * @param string $supervisord_config_path
+     * @param string $supervisord_conf
      * @return SupervisordManager
      */
-    private function getSupervisordManager($supervisord_config_path = null)
+    private function getSupervisordManager($supervisord_conf = null)
     {
         $config_array = require __DIR__ . '/../../../../config/config.test.php';
 
         $daemon_test_config = $config_array['test']['daemon']['supervisord'];
-        $daemon_test_config['daemon']['config_path'] = $supervisord_config_path;
+        $daemon_test_config['daemon']['config_path'] = $supervisord_conf;
 
         $config = new Config(
             dirname(__FILE__) . '/ExpectedSupervisordConfig.php',

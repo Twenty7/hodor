@@ -2,8 +2,6 @@
 
 namespace Hodor\MessageQueue\Adapter;
 
-use Hodor\MessageQueue\Message;
-
 interface ConfigInterface
 {
     /**

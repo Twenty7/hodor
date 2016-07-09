@@ -6,13 +6,20 @@ use Exception;
 
 use PHPUnit_Framework_TestCase;
 
+/**
+ * @coversDefaultClass Hodor\Database\Driver\YoPdoDriver
+ */
 class DriverTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * @dataProvider adapterProvider
+     * @covers ::__construct
+     * @covers ::queryMultiple
+     * @covers ::<private>
      */
-    public function testQueryMultipleCanRunMultipleQueries($adapter)
+    public function testQueryMultipleCanRunMultipleQueries()
     {
+        $adapter = $this->getYoPdoDriver();
+
         $tablename = 'test_multiple_queries_' . uniqid();
 
         $sql = <<<SQL
@@ -23,11 +30,15 @@ SQL;
     }
 
     /**
-     * @dataProvider adapterProvider
+     * @covers ::__construct
+     * @covers ::queryMultiple
+     * @covers ::<private>
      * @expectedException Exception
      */
-    public function testQueryMultipleThrowsAnExceptionOnError($adapter)
+    public function testQueryMultipleThrowsAnExceptionOnError()
     {
+        $adapter = $this->getYoPdoDriver();
+
         $sql = <<<SQL
 SELECT 1 FROM not_there;
 SQL;
@@ -35,10 +46,14 @@ SQL;
     }
 
     /**
-     * @dataProvider adapterProvider
+     * @covers ::__construct
+     * @covers ::selectRowGenerator
+     * @covers ::<private>
      */
-    public function testSelectRowGeneratorGeneratesResults($adapter)
+    public function testSelectRowGeneratorGeneratesResults()
     {
+        $adapter = $this->getYoPdoDriver();
+
         $sql = <<<SQL
 SELECT 1 AS col UNION
 SELECT 2 AS col UNION
@@ -54,11 +69,15 @@ SQL;
     }
 
     /**
-     * @dataProvider adapterProvider
+     * @covers ::__construct
+     * @covers ::selectRowGenerator
+     * @covers ::<private>
      * @expectedException Exception
      */
-    public function testSelectRowGeneratorThrowsAnExceptionOnError($adapter)
+    public function testSelectRowGeneratorThrowsAnExceptionOnError()
     {
+        $adapter = $this->getYoPdoDriver();
+
         $sql = <<<SQL
 SELECT 1 FROM not_here;
 SQL;
@@ -70,10 +89,14 @@ SQL;
     }
 
     /**
-     * @dataProvider adapterProvider
+     * @covers ::__construct
+     * @covers ::selectOne
+     * @covers ::<private>
      */
-    public function testSelectOneReturnsResults($adapter)
+    public function testSelectOneReturnsResults()
     {
+        $adapter = $this->getYoPdoDriver();
+
         $sql = <<<SQL
 SELECT 5 AS col
 SQL;
@@ -81,11 +104,15 @@ SQL;
     }
 
     /**
-     * @dataProvider adapterProvider
+     * @covers ::__construct
+     * @covers ::selectOne
+     * @covers ::<private>
      * @expectedException Exception
      */
-    public function testSelectOneThrowsAnExceptionOnError($adapter)
+    public function testSelectOneThrowsAnExceptionOnError()
     {
+        $adapter = $this->getYoPdoDriver();
+
         $sql = <<<SQL
 SELECT 1 FROM not_there;
 SQL;
@@ -93,10 +120,14 @@ SQL;
     }
 
     /**
-     * @dataProvider adapterProvider
+     * @covers ::__construct
+     * @covers ::insert
+     * @covers ::<private>
      */
-    public function testInsertedRowCanBeRetrieved($adapter)
+    public function testInsertedRowCanBeRetrieved()
     {
+        $adapter = $this->getYoPdoDriver();
+
         $tablename = 'test_insert_' . uniqid();
 
         $sql = <<<SQL
@@ -122,19 +153,27 @@ SQL;
     }
 
     /**
-     * @dataProvider adapterProvider
+     * @covers ::__construct
+     * @covers ::insert
+     * @covers ::<private>
      * @expectedException Exception
      */
-    public function testInsertThrowsAnExceptionOnError($adapter)
+    public function testInsertThrowsAnExceptionOnError()
     {
+        $adapter = $this->getYoPdoDriver();
+
         $adapter->insert('some_table', ['no_row' => true]);
     }
 
     /**
-     * @dataProvider adapterProvider
+     * @covers ::__construct
+     * @covers ::delete
+     * @covers ::<private>
      */
-    public function testDeletedRowNoLongerExists($adapter)
+    public function testDeletedRowNoLongerExists()
     {
+        $adapter = $this->getYoPdoDriver();
+
         $tablename = 'test_insert_' . uniqid();
 
         $sql = <<<SQL
@@ -171,18 +210,23 @@ SQL;
     }
 
     /**
-     * @dataProvider adapterProvider
+     * @covers ::__construct
+     * @covers ::delete
+     * @covers ::<private>
      * @expectedException Exception
      */
-    public function testDeleteThrowsAnExceptionOnError($adapter)
+    public function testDeleteThrowsAnExceptionOnError()
     {
+        $adapter = $this->getYoPdoDriver();
+
         $adapter->delete('some_table', 'no_row = :no_row', ['no_row' => true]);
     }
 
     /**
-     * @return array
+     * @return YoPdoDriver
+     * @throws Exception
      */
-    public function adapterProvider()
+    public function getYoPdoDriver()
     {
         $config_path = __DIR__ . '/../../../../config/config.test.php';
         if (!file_exists($config_path)) {
@@ -191,8 +235,6 @@ SQL;
 
         $config = require $config_path;
 
-        return [
-            [new YoPdoDriver($config['test']['db']['yo-pdo-pgsql'])],
-        ];
+        return new YoPdoDriver($config['test']['db']['yo-pdo-pgsql']);
     }
 }

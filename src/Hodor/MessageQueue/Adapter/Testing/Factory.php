@@ -1,6 +1,6 @@
 <?php
 
-namespace Hodor\MessageQueue\Adapter\Amqp;
+namespace Hodor\MessageQueue\Adapter\Testing;
 
 use Hodor\MessageQueue\Adapter\ConfigInterface;
 use Hodor\MessageQueue\Adapter\ConsumerInterface;
@@ -15,11 +15,6 @@ class Factory implements FactoryInterface
     private $config;
 
     /**
-     * @var ChannelFactory
-     */
-    private $channel_manager;
-
-    /**
      * @var Consumer[]
      */
     private $consumers = [];
@@ -28,6 +23,11 @@ class Factory implements FactoryInterface
      * @var Producer[]
      */
     private $producers = [];
+
+    /**
+     * @var MessageBank[]
+     */
+    private $message_banks = [];
 
     /**
      * @param ConfigInterface $config
@@ -47,7 +47,7 @@ class Factory implements FactoryInterface
             return $this->consumers[$queue_key];
         }
 
-        $this->consumers[$queue_key] = new Consumer($queue_key, $this->getChannelFactory());
+        $this->consumers[$queue_key] = new Consumer($this->getMessageBank($queue_key));
 
         return $this->consumers[$queue_key];
     }
@@ -62,31 +62,23 @@ class Factory implements FactoryInterface
             return $this->producers[$queue_key];
         }
 
-        $this->producers[$queue_key] = new Producer($queue_key, $this->getChannelFactory());
+        $this->producers[$queue_key] = new Producer($this->getMessageBank($queue_key));
 
         return $this->producers[$queue_key];
     }
 
-    public function disconnectAll()
-    {
-        if (!$this->channel_manager) {
-            return;
-        }
-
-        $this->channel_manager->disconnectAll();
-    }
-
     /**
-     * @return ChannelFactory
+     * @param string $queue_key
+     * @return MessageBank
      */
-    private function getChannelFactory()
+    private function getMessageBank($queue_key)
     {
-        if ($this->channel_manager) {
-            return $this->channel_manager;
+        if (!empty($this->message_banks[$queue_key])) {
+            return $this->message_banks[$queue_key];
         }
 
-        $this->channel_manager = new ChannelFactory($this->config);
+        $this->message_banks[$queue_key] = new MessageBank($this->config->getQueueConfig($queue_key));
 
-        return $this->channel_manager;
+        return $this->message_banks[$queue_key];
     }
 }
